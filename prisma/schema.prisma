@@ -1,0 +1,54 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum LeadStatus {
+  PENDING
+  WHATSAPP_SENT
+  WHATSAPP_FAILED
+  CONTACTED
+}
+
+enum LeadSource {
+  HOME
+  CONTACT
+  PROPERTY
+  WHATSAPP
+}
+
+model Lead {
+  id                String     @id @default(cuid())
+  name              String
+  phone             String
+  email             String?
+  interest          String
+  message           String?
+  source            LeadSource @default(HOME)
+  status            LeadStatus @default(PENDING)
+  whatsappMessageId String?
+  whatsappError     String?
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+
+  @@index([createdAt])
+  @@index([status])
+  @@index([phone])
+}
+
+model WhatsAppInboundMessage {
+  id          String   @id @default(cuid())
+  waMessageId String   @unique
+  fromPhone   String
+  messageType String
+  body        String?
+  payload     Json
+  createdAt   DateTime @default(now())
+
+  @@index([fromPhone])
+  @@index([createdAt])
+}
