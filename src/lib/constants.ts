@@ -3,7 +3,7 @@ export const SITE = {
   tagline: "Tu próximo hogar, con confianza y exclusividad",
   description:
     "Inmobiliaria premium en República Dominicana. Compra, alquiler e inversión en las mejores zonas del país.",
-  url: "https://horizonbienesraices.com",
+  url: "https://bienesraices.devstudioo.com",
   phone: "+1 (809) 555-0198",
   whatsapp: "18095550198",
   email: "contacto@horizonbienesraices.com",
