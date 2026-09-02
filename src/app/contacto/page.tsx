@@ -9,11 +9,13 @@ export default function ContactoPage() {
   const [sent, setSent] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [whatsappWarning, setWhatsappWarning] = useState<string | null>(null);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setLoading(true);
     setError(null);
+    setWhatsappWarning(null);
 
     const form = new FormData(event.currentTarget);
     const firstName = String(form.get("firstName") ?? "").trim();
@@ -33,13 +35,21 @@ export default function ContactoPage() {
         }),
       });
 
-      const data = (await response.json()) as { ok?: boolean; error?: string };
+      const data = (await response.json()) as {
+        ok?: boolean;
+        error?: string;
+        whatsappSent?: boolean;
+        whatsappError?: string | null;
+      };
       if (!response.ok || !data.ok) {
         throw new Error(data.error ?? "No se pudo enviar el mensaje.");
       }
 
+      if (!data.whatsappSent && data.whatsappError) {
+        setWhatsappWarning(data.whatsappError);
+      }
+
       setSent(true);
-      event.currentTarget.reset();
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : "Error inesperado.");
     } finally {
@@ -61,9 +71,16 @@ export default function ContactoPage() {
             onSubmit={handleSubmit}
           >
             {sent ? (
-              <p className="text-[15px] font-medium text-accent-dark">
-                ¡Mensaje enviado! Te contactaremos pronto por WhatsApp o teléfono.
-              </p>
+              <div className="space-y-3">
+                <p className="text-[15px] font-medium text-accent-dark">
+                  ¡Mensaje enviado! Te contactaremos pronto por WhatsApp o teléfono.
+                </p>
+                {whatsappWarning ? (
+                  <p className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                    {whatsappWarning}
+                  </p>
+                ) : null}
+              </div>
             ) : (
               <>
                 <div className="grid gap-4 sm:grid-cols-2">

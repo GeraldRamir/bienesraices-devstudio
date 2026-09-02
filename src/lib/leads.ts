@@ -1,7 +1,9 @@
 import type { LeadSource } from "@prisma/client";
-import { SITE } from "@/lib/constants";
 import { prisma } from "@/lib/db";
-import { notifyAgentAboutLead, sendLeadConfirmation } from "@/lib/whatsapp";
+import {
+  notifyAgentAboutLead,
+  sendCustomerLeadMessage,
+} from "@/lib/whatsapp";
 
 export type CreateLeadInput = {
   name: string;
@@ -10,7 +12,6 @@ export type CreateLeadInput = {
   interest: string;
   message?: string;
   source?: LeadSource;
-  notifyPhone?: string;
 };
 
 export async function createLeadAndNotify(input: CreateLeadInput) {
@@ -26,44 +27,48 @@ export async function createLeadAndNotify(input: CreateLeadInput) {
     },
   });
 
-  const agentResult = await notifyAgentAboutLead({
-    name: lead.name,
+  const customerResult = await sendCustomerLeadMessage({
     phone: lead.phone,
+    name: lead.name,
     interest: lead.interest,
     message: lead.message,
-    notifyPhone: input.notifyPhone ?? SITE.whatsapp,
   });
 
-  let confirmationResult:
-    | { ok: true; skipped?: boolean; messageId?: string }
-    | { ok: false; error: string } = { ok: true, skipped: true };
+  const agentResult = customerResult.ok
+    ? await notifyAgentAboutLead({
+        name: lead.name,
+        phone: lead.phone,
+        interest: lead.interest,
+        message: lead.message,
+      })
+    : { ok: false as const, error: "Agent notification skipped because customer message failed.", skipped: true as const };
 
-  if (agentResult.ok) {
-    confirmationResult = await sendLeadConfirmation({
-      phone: lead.phone,
-      name: lead.name,
-    });
-  }
+  const whatsappSent = customerResult.ok;
+  const whatsappError = customerResult.ok
+    ? agentResult.ok || "skipped" in agentResult
+      ? null
+      : agentResult.error
+    : customerResult.error;
 
   const updatedLead = await prisma.lead.update({
     where: { id: lead.id },
-    data: agentResult.ok
+    data: whatsappSent
       ? {
           status: "WHATSAPP_SENT",
-          whatsappMessageId: agentResult.messageId,
-          whatsappError: confirmationResult.ok ? null : confirmationResult.error,
+          whatsappMessageId: customerResult.messageId,
+          whatsappError,
         }
       : {
           status: "WHATSAPP_FAILED",
-          whatsappError: agentResult.error,
+          whatsappError: customerResult.error,
         },
   });
 
   return {
     lead: updatedLead,
     whatsapp: {
+      customer: customerResult,
       agent: agentResult,
-      confirmation: confirmationResult,
     },
   };
 }

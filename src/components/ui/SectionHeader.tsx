@@ -17,29 +17,35 @@ export function SectionHeader({
 }) {
   return (
     <div className={cn(align === "center" && "text-center", className)}>
-      {eyebrow && (
-        <p className={cn("mb-3 text-[12px] font-semibold uppercase tracking-[0.12em]", dark ? "text-accent" : "text-accent-dark")}>
+      {eyebrow ? (
+        <p
+          className={cn(
+            "mb-3 text-[12px] font-semibold uppercase tracking-[0.18em]",
+            dark ? "text-accent" : "text-accent-dark",
+          )}
+        >
           {eyebrow}
         </p>
-      )}
-      <h2 className={cn("font-serif text-[clamp(1.75rem,3.5vw,2.75rem)] font-semibold leading-tight tracking-tight", dark ? "text-white" : "text-ink")}>
+      ) : null}
+      <h2
+        className={cn(
+          "text-[clamp(1.875rem,3.5vw,2.75rem)] font-bold leading-[1.1] tracking-[-0.03em]",
+          dark ? "text-white" : "text-ink",
+        )}
+      >
         {title}
       </h2>
-      {description && (
-        <p className={cn("mt-3 max-w-2xl text-[15px] leading-relaxed", dark ? "text-white/65" : "text-muted", align === "center" && "mx-auto")}>
+      {description ? (
+        <p
+          className={cn(
+            "mt-4 max-w-2xl text-[16px] leading-relaxed",
+            dark ? "text-white/65" : "text-muted",
+            align === "center" && "mx-auto",
+          )}
+        >
           {description}
         </p>
-      )}
+      ) : null}
     </div>
   );
-}
-
-export function FadeIn({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return <div className={cn("animate-fade-up", className)}>{children}</div>;
 }

@@ -10,6 +10,7 @@ const envSchema = z.object({
   WHATSAPP_NOTIFY_PHONE: z.string().optional(),
   WHATSAPP_LEAD_TEMPLATE: z.string().default("hello_world"),
   WHATSAPP_CONFIRMATION_TEMPLATE: z.string().optional(),
+  WHATSAPP_AGENT_TEMPLATE: z.string().optional(),
 });
 
 export type ServerEnv = z.infer<typeof envSchema>;
@@ -40,5 +41,6 @@ export function getWhatsAppConfig() {
     notifyPhone: env.WHATSAPP_NOTIFY_PHONE,
     leadTemplate: env.WHATSAPP_LEAD_TEMPLATE,
     confirmationTemplate: env.WHATSAPP_CONFIRMATION_TEMPLATE,
+    agentTemplate: env.WHATSAPP_AGENT_TEMPLATE,
   };
 }

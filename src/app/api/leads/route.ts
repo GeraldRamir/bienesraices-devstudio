@@ -34,8 +34,8 @@ export async function POST(request: Request) {
       ok: true,
       leadId: result.lead.id,
       status: result.lead.status,
-      whatsappSent: result.whatsapp.agent.ok,
-      whatsappError: result.whatsapp.agent.ok ? null : result.whatsapp.agent.error,
+      whatsappSent: result.whatsapp.customer.ok,
+      whatsappError: result.lead.whatsappError,
     });
   } catch (error) {
     console.error("[api/leads] error:", error);

@@ -206,7 +206,7 @@ export function DemoNavigationGuard() {
             aria-modal="true"
             aria-labelledby="demo-gate-title"
             aria-describedby="demo-gate-desc"
-            className="relative w-full max-w-md rounded-[28px] border border-black/10 bg-cream p-6 shadow-[0_24px_60px_rgba(0,0,0,0.18)] sm:p-7"
+            className="relative w-full max-w-md rounded-[28px] border border-black/10 bg-white p-6 shadow-[0_24px_60px_rgba(0,0,0,0.18)] sm:p-7"
             initial={reduce ? false : { opacity: 0, y: 28, scale: 0.94, filter: "blur(10px)" }}
             animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
             exit={
@@ -219,7 +219,7 @@ export function DemoNavigationGuard() {
             <button
               type="button"
               onClick={close}
-              className="absolute right-4 top-4 grid size-8 place-items-center rounded-full text-muted transition hover:bg-black/[0.05] hover:text-ink"
+              className="absolute right-4 top-4 grid size-8 place-items-center text-ff-muted transition hover:text-ff-ink"
               aria-label="Cerrar"
             >
               <X className="size-4" strokeWidth={2} />
@@ -234,9 +234,10 @@ export function DemoNavigationGuard() {
               <Image
                 src={DEVSTUDIO_LOGO_SRC}
                 alt="DevStudio"
-                width={142}
-                height={40}
-                className="h-9 w-auto object-contain sm:h-10"
+                width={160}
+                height={56}
+                className="h-10 w-auto object-contain sm:h-11"
+                priority
               />
               <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-accent-dark">
                 Demo visual
@@ -248,13 +249,13 @@ export function DemoNavigationGuard() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: reduce ? 0 : 0.45, ease: EASE, delay: reduce ? 0 : 0.1 }}
             >
-              <h2 id="demo-gate-title" className="font-serif text-xl font-semibold tracking-tight text-ink sm:text-2xl">
+              <h2 id="demo-gate-title" className="text-xl font-extrabold tracking-tight text-ff-ink sm:text-2xl">
                 Estás viendo una demo visual
               </h2>
-              <p id="demo-gate-desc" className="mt-3 text-sm leading-relaxed text-muted">
-                Esta experiencia muestra el diseño y la navegación del proyecto inmobiliario. Para acceder a
-                propiedades, agentes, filtros avanzados y funcionalidades completas, solicita el servicio con
-                DevStudio.
+              <p id="demo-gate-desc" className="mt-3 text-sm leading-relaxed text-ff-muted">
+                Esta experiencia muestra el diseño y la navegación del proyecto inmobiliario. Para
+                acceder a propiedades, agentes, filtros avanzados y funcionalidades completas,
+                solicita el servicio con DevStudio.
               </p>
             </motion.div>
 
@@ -269,7 +270,7 @@ export function DemoNavigationGuard() {
                 data-demo-allow="true"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-ink px-5 text-sm font-semibold text-white transition hover:bg-black"
+                className="inline-flex h-11 items-center justify-center gap-2 bg-ff-ink px-5 text-sm font-semibold text-white transition hover:bg-black"
               >
                 Solicitar servicio
                 <ArrowUpRight className="size-4" strokeWidth={2.2} />
@@ -277,7 +278,7 @@ export function DemoNavigationGuard() {
               <button
                 type="button"
                 onClick={close}
-                className="inline-flex h-11 items-center justify-center rounded-full border border-black/15 px-5 text-sm font-medium text-ink transition hover:border-black/30 hover:bg-white"
+                className="inline-flex h-11 items-center justify-center border border-black/20 px-5 text-sm font-medium text-ff-ink transition hover:border-black/35 hover:bg-white"
               >
                 Seguir en la demo
               </button>
@@ -285,13 +286,13 @@ export function DemoNavigationGuard() {
 
             {pendingHref ? (
               <motion.p
-                className="mt-4 text-[11px] leading-snug text-muted-light"
+                className="mt-4 text-[11px] leading-snug text-ff-soft"
                 initial={reduce ? false : { opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: reduce ? 0 : 0.35, delay: reduce ? 0 : 0.22 }}
               >
                 Destino bloqueado en demo:{" "}
-                <span className="font-medium text-muted">
+                <span className="font-medium text-ff-muted">
                   {pendingHref.replace(window.location.origin, "") || pendingHref}
                 </span>
               </motion.p>

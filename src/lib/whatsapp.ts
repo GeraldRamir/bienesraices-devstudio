@@ -1,5 +1,4 @@
 import { getWhatsAppConfig } from "@/lib/env";
-import { SITE } from "@/lib/constants";
 
 type WhatsAppApiResponse = {
   messages?: Array<{ id: string }>;
@@ -30,6 +29,21 @@ export function normalizePhone(phone: string): string {
   }
 
   return digits;
+}
+
+function formatWhatsAppError(data: WhatsAppApiResponse, status: number): string {
+  const message = data.error?.message ?? `WhatsApp API error (${status})`;
+  const code = data.error?.code;
+
+  if (code === 190) {
+    return `${message} Renueva WHATSAPP_ACCESS_TOKEN en Meta y Vercel.`;
+  }
+
+  if (code === 131030) {
+    return `${message} Agrega el número del cliente como destinatario de prueba en Meta → WhatsApp → API Setup.`;
+  }
+
+  return message;
 }
 
 function buildTemplatePayload(options: SendTemplateOptions) {
@@ -79,10 +93,9 @@ export async function sendWhatsAppTemplate(
     const data = (await response.json()) as WhatsAppApiResponse;
 
     if (!response.ok) {
-      return {
-        ok: false,
-        error: data.error?.message ?? `WhatsApp API error (${response.status})`,
-      };
+      const error = formatWhatsAppError(data, response.status);
+      console.error("[whatsapp] send failed:", error, data.error);
+      return { ok: false, error };
     }
 
     const messageId = data.messages?.[0]?.id;
@@ -92,11 +105,56 @@ export async function sendWhatsAppTemplate(
 
     return { ok: true, messageId };
   } catch (error) {
-    return {
-      ok: false,
-      error: error instanceof Error ? error.message : "Unknown WhatsApp error",
-    };
+    const message = error instanceof Error ? error.message : "Unknown WhatsApp error";
+    console.error("[whatsapp] send error:", message);
+    return { ok: false, error: message };
   }
+}
+
+function getCustomerTemplateConfig() {
+  const config = getWhatsAppConfig();
+  const templateName = config.confirmationTemplate ?? config.leadTemplate;
+  const isHelloWorld = templateName === "hello_world";
+
+  return {
+    templateName,
+    languageCode: isHelloWorld ? "en_US" : "es",
+    bodyParameters: isHelloWorld
+      ? undefined
+      : undefined as string[] | undefined,
+  };
+}
+
+function getAgentTemplateConfig() {
+  const config = getWhatsAppConfig();
+  const templateName = config.agentTemplate ?? config.leadTemplate;
+  const isHelloWorld = templateName === "hello_world";
+
+  return {
+    templateName,
+    languageCode: isHelloWorld ? "en_US" : "es",
+    usesBodyParams: !isHelloWorld,
+  };
+}
+
+export async function sendCustomerLeadMessage(input: {
+  phone: string;
+  name: string;
+  interest: string;
+  message?: string | null;
+}) {
+  const config = getCustomerTemplateConfig();
+  const templateName = config.templateName;
+  const isHelloWorld = templateName === "hello_world";
+
+  return sendWhatsAppTemplate({
+    to: input.phone,
+    templateName,
+    languageCode: config.languageCode,
+    bodyParameters: isHelloWorld
+      ? undefined
+      : [input.name, input.interest, input.message?.trim() || "Sin mensaje adicional"],
+  });
 }
 
 export async function notifyAgentAboutLead(input: {
@@ -104,55 +162,27 @@ export async function notifyAgentAboutLead(input: {
   phone: string;
   interest: string;
   message?: string | null;
-  notifyPhone?: string | null;
 }) {
   const config = getWhatsAppConfig();
-  const targetPhone = input.notifyPhone ?? config.notifyPhone ?? SITE.whatsapp;
+  const notifyPhone = config.notifyPhone;
 
-  if (!targetPhone) {
-    return {
-      ok: false as const,
-      error: "No notify phone configured.",
-    };
+  if (!notifyPhone) {
+    return { ok: true as const, skipped: true as const };
   }
 
-  const isHelloWorld = config.leadTemplate === "hello_world";
+  const agentTemplate = getAgentTemplateConfig();
 
   return sendWhatsAppTemplate({
-    to: targetPhone,
-    templateName: config.leadTemplate,
-    languageCode: isHelloWorld ? "en_US" : "es",
-    bodyParameters: isHelloWorld
-      ? undefined
-      : [
+    to: notifyPhone,
+    templateName: agentTemplate.templateName,
+    languageCode: agentTemplate.languageCode,
+    bodyParameters: agentTemplate.usesBodyParams
+      ? [
           input.name,
           input.phone,
           input.interest,
           input.message?.trim() || "Sin mensaje adicional",
-        ],
+        ]
+      : undefined,
   });
-}
-
-export async function sendLeadConfirmation(input: {
-  phone: string;
-  name: string;
-}) {
-  const config = getWhatsAppConfig();
-
-  if (!config.confirmationTemplate) {
-    return { ok: true as const, skipped: true as const };
-  }
-
-  const result = await sendWhatsAppTemplate({
-    to: input.phone,
-    templateName: config.confirmationTemplate,
-    languageCode: "es",
-    bodyParameters: [input.name],
-  });
-
-  if (!result.ok) {
-    return { ok: false as const, error: result.error };
-  }
-
-  return { ok: true as const, messageId: result.messageId };
 }

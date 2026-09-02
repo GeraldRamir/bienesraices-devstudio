@@ -7,4 +7,4 @@ export const DEVSTUDIO_LINKS = {
   linkedin: "https://www.linkedin.com/in/dev-studioo-899267424",
 } as const;
 
-export const DEVSTUDIO_LOGO_SRC = "/brand/devstudio-logo.svg";
+export const DEVSTUDIO_LOGO_SRC = "/brand/devstudio-logo.png";
